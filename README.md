@@ -12,7 +12,7 @@ Admins can decide how much slap damage will be inflicted, how long the player ca
 - [fuckZones](https://forums.alliedmods.net/showthread.php?t=328422) by Bara
 
 ## Installation ##
-1. Grab the latest release from the release page and unzip it in your csgo folder.
+1. Grab the latest release from the release page and unzip it in your sourcemod folder.
 2. Restart the server or type `sm plugins load fuckZonesAntiCamp` in the console to load the plugin.
 3. The config file will be automatically generated in cfg/sourcemod/
 
