@@ -1,5 +1,5 @@
 # fuckZonesAntiCamp
-An advanced anti-camp plugin for CS:GO, based on fuckZones by Bara.
+An advanced anti-camp plugin for CS:GO, made for fuckZones by Bara.
 
 ![Downloads](https://img.shields.io/github/downloads/Sarrus1/fuckZonesAntiCamp/total) ![Last commit](https://img.shields.io/github/last-commit/Sarrus1/fuckZonesAntiCamp "Last commit") ![Open issues](https://img.shields.io/github/issues/Sarrus1/fuckZonesAntiCamp "Open Issues") ![Closed issues](https://img.shields.io/github/issues-closed/Sarrus1/fuckZonesAntiCamp "Closed Issues") ![Size](https://img.shields.io/github/repo-size/Sarrus1/fuckZonesAntiCamp "Size")
 
