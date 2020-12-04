@@ -7,12 +7,14 @@ An advanced anti-camp plugin for CS:GO, based on fuckZones by Bara.
 Admins can define areas, where, if a player spends more than x minutes in it, he will get slapped until he leaves the area.
 Admins can decide how much slap damage will be inflicted, how long the player can stay in the areas, and more.
 
+## Requirements ##
+- Sourcemod and Metamod
+- [fuckZones](https://forums.alliedmods.net/showthread.php?t=328422) by Bara
+
 ## Installation ##
-This plugin requires Sourcemod and Metamod.
-This plugin requires [fuckZones](https://forums.alliedmods.net/showthread.php?t=328422) by Bara
-Grab the latest release from the release page and unzip it in your csgo folder.
-Restart the server or type `sm plugins load fuckZonesAntiCamp` in the console to load the plugin.
-The config file will be automatically generated in cfg/sourcemod/
+1. Grab the latest release from the release page and unzip it in your csgo folder.
+2. Restart the server or type `sm plugins load fuckZonesAntiCamp` in the console to load the plugin.
+3. The config file will be automatically generated in cfg/sourcemod/
 
 ## Configuration ##
 - You can modify the phrases in addons/sourcemod/translations/fuckZonesAntiCamp.phrases.txt.
