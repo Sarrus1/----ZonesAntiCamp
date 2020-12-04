@@ -1,0 +1,35 @@
+﻿"Phrases"
+{
+    "Camp_Message_All"
+    {
+        "#format" "{1:N}"
+        "en"        "{green}[Anti-Camp]{gold} {1} {default}is camping!"
+        "fr"        "{green}[Anti-Camp]{gold} {1} {default}est en train de camper!"
+    }
+    "Camp_Message_Self"
+    {
+        "en"        "{green}[Anti-Camp] {default}Stop camping!"
+        "fr"        "{green}[Anti-Camp] {default}Arrêtez de camper!"
+    }
+    "Camp_Message_Warning"
+    {
+        "#format" "{1:i}"
+        "en"        "Stop camping in the next {1} seconds or you'll be punished."
+        "fr"        "Arrêtez de camper dans les prochaines {1} secondes ou vous serez punis."
+    }
+    "Cooldown_Not_Expired"
+    {
+        "en"        "{green}[Anti-Camp] {default}Your cooldown has not expired yet!"
+        "fr"        "{green}[Anti-Camp] {default}Votre cooldown n'a pas encore expiré!"
+    }
+    "Cooldown_Expired"
+    {
+        "en"        "{green}[Anti-Camp] {default}Your cooldown has expired."
+        "fr"        "{green}[Anti-Camp] {default}Votre cooldown a expiré."
+    }
+    "AntiCamp_Disabled"
+    {
+        "en"        "{green}[Anti-Camp] {default}The anti-camp has been disabled for the rest of the round."
+        "fr"        "{green}[Anti-Camp] {default}L'anti-camp a été désactivé pour le reste du round."
+    }
+}
