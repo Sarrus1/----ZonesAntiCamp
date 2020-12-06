@@ -2,6 +2,7 @@
 #include <fuckZones>
 #include <sdktools>
 #include <colorvariables>
+#include <smwarn>
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -25,6 +26,9 @@ ConVar
 	g_PunishFreq,
 	g_CooldownDelay,
 	g_disabletime,
+	g_bEnableWarn,
+	g_iWarnValue,
+	g_szWarnReason,
 	cvar_time;
 
 int g_iCampCounters[MAXPLAYERS +1] = {0};
@@ -34,7 +38,7 @@ public Plugin myinfo =
 	name = "FuckZonesAntiCamp",
 	author = "Sarrus",
 	description = "An anti-camp module for the fuckZones plugin by Bara.",
-	version = "1.0",
+	version = "1.1",
 	url = "https://github.com/Sarrus1/"
 };
 
@@ -49,8 +53,10 @@ public void OnPluginStart()
 	g_CooldownDelay = CreateConVar("sm_fuckzone_anticamp_cooldown_delay", "5.0", "How much time a client has to be out of a camping zone before he is no longer instantly slapped when entering one.", 0, true, 0.0);
 	g_disabletime = CreateConVar("sm_fuckzone_anticamp_disabletime", "40", "How much time after the round start until the timer automatically disables. Set to 0 to disable.", 0, true, 0.0);
 	g_szSoundFilePath = CreateConVar("sm_fuckzone_anticamp_sound_path", "misc/anticamp/camper.mp3", "The file path of the camping sound. Leave blank to disable.");
-
-
+	g_bEnableWarn = CreateConVar("sm_fuckzone_anticamp_enable_warn", "0", "Enable the warning system. 0 to disable, 1 to enable. ***REQUIRES the SM warn plugin!***", 0, true, 0.0, true, 1.0);
+	g_iWarnValue = CreateConVar("sm_fuckzone_anticamp_warn_value", "3", "After how many times a player caught camping should be warned.", 0, true, 0.0);
+	g_szWarnReason = CreateConVar("sm_fuckzone_anticamp_warn_reason", "Stop camping.", "The warn reason.");
+	
 	HookEvent("round_start", Event_OnRoundStart);
 	HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
 	HookEvent("teamplay_round_start", Event_OnRoundStart);
@@ -258,6 +264,12 @@ public Action Punish_Timer(Handle timer, int UserId)
 	{
 		g_iCampCounters[client]++;
 		CPrintToChatAll("%t", "Camp_Message_All", client, g_iCampCounters[client]);
+		if(GetConVarBool(g_bEnableWarn) && g_iCampCounters[client] == GetConVarInt(g_iWarnValue))
+		{
+			char szWarnReason[256];
+			GetConVarString(g_szWarnReason, szWarnReason, sizeof(szWarnReason));
+			smwarn_warn(client, szWarnReason);
+		}
 		char szSoundFilePath[256];
 		GetConVarString(g_szSoundFilePath, szSoundFilePath, 256);
 		if (!StrEqual(szSoundFilePath, ""))
