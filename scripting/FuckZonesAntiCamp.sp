@@ -5,22 +5,29 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+#define EFFECT_NAME "AntiCamp Zone"
+
+
 //Timers Handle
-Handle g_AntiCampDisable = null;
-Handle g_hClientTimers[MAXPLAYERS + 1] = {null, ...};
-Handle g_hPunishTimers[MAXPLAYERS + 1] = {null, ...};
-Handle g_hFreqTimers[MAXPLAYERS + 1] = {null, ...};
-Handle g_hCooldownTimers[MAXPLAYERS + 1] = {null, ...};
+Handle 
+	g_AntiCampDisable = null,
+	g_hClientTimers[MAXPLAYERS + 1] = {null, ...},
+	g_hPunishTimers[MAXPLAYERS + 1] = {null, ...},
+	g_hFreqTimers[MAXPLAYERS + 1] = {null, ...},
+	g_hCooldownTimers[MAXPLAYERS + 1] = {null, ...};
 
 bool g_anticampdisabled = false;
 
-ConVar g_szSoundFilePath = null;
-ConVar g_SlapDamage;
-ConVar g_PunishDelay;
-ConVar g_PunishFreq;
-ConVar g_CooldownDelay;
-ConVar g_disabletime;
-ConVar cvar_time;
+ConVar 
+	g_szSoundFilePath = null,
+	g_SlapDamage,
+	g_PunishDelay,
+	g_PunishFreq,
+	g_CooldownDelay,
+	g_disabletime,
+	cvar_time;
+
+int g_iCampCounters[MAXPLAYERS +1] = {0};
 
 public Plugin myinfo =
 {
@@ -86,10 +93,11 @@ public void OnMapStart()
 	delete(g_AntiCampDisable);
 	for(int iClient = 1; iClient <= MaxClients; iClient++)
     {
-      if(IsClientInGame(iClient))
-      {
+			g_iCampCounters[iClient] = 0;
+			if(IsClientInGame(iClient))
+			{
 				ResetTimer(iClient);
-      }
+			}
     }
 }
 
@@ -118,12 +126,14 @@ public void ResetTimer(int client)
 //Reset timer when client arrives
 public void OnClientPutInServer(int client)
 {
+	g_iCampCounters[client] = 0;
 	ResetTimer(client);
 }
 
 //Reset timer when client disconnects
 public void OnClientDisconnect(int client)
 {
+	g_iCampCounters[client] = 0;
 	ResetTimer(client);
 }
 
@@ -155,7 +165,7 @@ public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 //Start timer when client enters a zone
 public void fuckZones_OnStartTouchZone_Post(int client, int entity, const char[] zone_name, int type)
 {
-	if(client < 2 || client > MaxClients || !IsClientInGame(client) ||!IsPlayerAlive(client) || IsWarmup() || g_anticampdisabled)
+	if(!IsValidClient(client) || IsWarmup() || g_anticampdisabled)
 		return;
 
 	if((StrContains(zone_name, "AntiCampCT", false) == 0 && GetClientTeam(client) == 3) || (StrContains(zone_name, "AntiCampT", false) == 0 && GetClientTeam(client) == 2) || (StrContains(zone_name, "AntiCampBoth", false) == 0))
@@ -192,7 +202,7 @@ public void fuckZones_OnStartTouchZone_Post(int client, int entity, const char[]
 //Stop timer when client leaves a zone
 public void fuckZones_OnEndTouchZone_Post(int client, int entity, const char[] zone_name, int type)
 {
-	if(client < 2 || client > MaxClients || !IsClientInGame(client) || !IsPlayerAlive(client) || IsWarmup() || g_anticampdisabled)
+	if(!IsValidClient(client) || IsWarmup() || g_anticampdisabled)
 		return;
 
 	if((StrContains(zone_name, "AntiCampCT", false) == 0 && GetClientTeam(client) == 3) || (StrContains(zone_name, "AntiCampT", false) == 0 && GetClientTeam(client) == 2) || (StrContains(zone_name, "AntiCampBoth", false) == 0))
@@ -246,7 +256,8 @@ public Action Punish_Timer(Handle timer, int UserId)
 	g_hPunishTimers[client] = null;
 	if (IsClientInGame(client) && IsPlayerAlive(client))
 	{
-		CPrintToChatAll("%t", "Camp_Message_All", client);
+		g_iCampCounters[client]++;
+		CPrintToChatAll("%t", "Camp_Message_All", client, g_iCampCounters[client]);
 		char szSoundFilePath[256];
 		GetConVarString(g_szSoundFilePath, szSoundFilePath, 256);
 		if (!StrEqual(szSoundFilePath, ""))
@@ -296,3 +307,64 @@ bool IsFreezeTime()
 {
 	return(GameRules_GetProp("m_bFreezePeriod") == 1);
 }
+
+
+public bool IsValidClient(int client)
+{
+	return (client >= 0 && client <= MaxClients && IsClientConnected(client) && IsClientAuthorized(client) && IsClientInGame(client) && !IsFakeClient(client));
+}
+
+/*
+bool IsCTZone(StringMap values)
+{
+	char sValue[MAX_KEY_VALUE_LENGTH];
+	if (GetZoneValue(values, "AntiCamp Team", sValue, sizeof(sValue)))
+	{
+		return (strcmp(sValue, "CT", false) == 0);
+	}
+	return false;
+}
+
+bool IsTZone(StringMap values)
+{
+	char sValue[MAX_KEY_VALUE_LENGTH];
+	if (GetZoneValue(values, "AntiCamp Team", sValue, sizeof(sValue)))
+	{
+		return (strcmp(sValue, "T", false) == 0);
+	}
+	return false;
+}
+
+bool IsBothZone(StringMap values)
+{
+	char sValue[MAX_KEY_VALUE_LENGTH];
+	PrintToChatAll("Both test");
+	if (GetZoneValue(values, "AntiCamp Team", sValue, sizeof(sValue)))
+	{
+		return (strcmp(sValue, "Both", false) == 0);
+	}
+	return false;
+}
+
+bool GetZoneValue(StringMap values, const char[] key, char[] value, int length)
+{
+	char sKey[MAX_KEY_NAME_LENGTH];
+	StringMapSnapshot keys = values.Snapshot();
+
+	for (int x = 0; x < keys.Length; x++)
+	{
+		keys.GetKey(x, sKey, sizeof(sKey));
+
+		if (strcmp(sKey, key, false) == 0)
+		{
+			values.GetString(sKey, value, length);
+
+			delete keys;
+			return true;
+		}
+	}
+
+	delete keys;
+	return false;
+}
+*/

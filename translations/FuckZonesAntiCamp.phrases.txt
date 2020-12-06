@@ -2,9 +2,9 @@
 {
     "Camp_Message_All"
     {
-        "#format" "{1:N}"
-        "en"        "{green}[Anti-Camp]{gold} {1} {default}is camping!"
-        "fr"        "{green}[Anti-Camp]{gold} {1} {default}est en train de camper!"
+        "#format" "{1:N},{2:i}"
+        "en"        "{green}[Anti-Camp]{gold} {1} {default}is spawn camping! They have been caught camping {purple}{2}{default} times."
+        "fr"        "{green}[Anti-Camp]{gold} {1} {default}est en train de camper au spawn! Ils ont été surpris {purple}{2}{default} fois en train de camper."
     }
     "Camp_Message_Self"
     {
