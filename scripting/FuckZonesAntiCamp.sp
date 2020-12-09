@@ -2,6 +2,7 @@
 #include <fuckZones>
 #include <sdktools>
 #include <colorvariables>
+#undef REQUIRE_PLUGIN
 #include <smwarn>
 #pragma newdecls required
 #pragma semicolon 1
@@ -66,6 +67,12 @@ public void OnPluginStart()
 
 	AutoExecConfig(true,"FuckZonesAntiCamp");
 
+}
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    MarkNativeAsOptional("smwarn_warn");
+    return APLRes_Success;
 }
 
 public Action Event_OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
