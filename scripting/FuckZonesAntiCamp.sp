@@ -271,7 +271,7 @@ public Action Punish_Timer(Handle timer, int UserId)
 	{
 		g_iCampCounters[client]++;
 		CPrintToChatAll("%t", "Camp_Message_All", client, g_iCampCounters[client]);
-		if(GetConVarBool(g_bEnableWarn) && g_iCampCounters[client] == GetConVarInt(g_iWarnValue))
+		if(GetConVarBool(g_bEnableWarn) && (g_iCampCounters[client] % GetConVarInt(g_iWarnValue) == 0))
 		{
 			char szWarnReason[256];
 			GetConVarString(g_szWarnReason, szWarnReason, sizeof(szWarnReason));
