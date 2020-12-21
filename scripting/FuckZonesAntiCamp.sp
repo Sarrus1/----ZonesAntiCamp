@@ -41,7 +41,7 @@ public Plugin myinfo =
 	name = "FuckZonesAntiCamp",
 	author = "Sarrus",
 	description = "An anti-camp module for the fuckZones plugin by Bara.",
-	version = "1.1",
+	version = "1.2",
 	url = "https://github.com/Sarrus1/"
 };
 
