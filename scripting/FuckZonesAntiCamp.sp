@@ -1,6 +1,7 @@
 #include <sourcemod>
 #include <fuckZones>
 #include <sdktools>
+#include <sdkhooks>
 #include <colorvariables>
 #undef REQUIRE_PLUGIN
 #include <smwarn>
@@ -30,6 +31,7 @@ ConVar
 	g_bEnableWarn,
 	g_iWarnValue,
 	g_szWarnReason,
+	g_cSlapOrDamage,
 	cvar_time;
 
 int g_iCampCounters[MAXPLAYERS +1] = {0};
@@ -48,7 +50,7 @@ public void OnPluginStart()
 	LoadTranslations("FuckZonesAntiCamp.phrases");
 
 	cvar_time = CreateConVar("sm_fuckzone_anticamp_time", "10", "Time in seconds before players must leave the zone or die");
-	g_SlapDamage = CreateConVar("sm_fuckzone_anticamp_slapdamage", "20", "Damage to inflict to the player when slapping.", 0, true, 0.0, true, 100.0);
+	g_SlapDamage = CreateConVar("sm_fuckzone_anticamp_damage", "20", "Damage to inflict to the player when punishing them.", 0, true, 0.0, true, 100.0);
 	g_PunishDelay = CreateConVar("sm_fuckzone_anticamp_punishdelay", "5", "How much time before slapping.", 0, true, 0.0);
 	g_PunishFreq = CreateConVar("sm_fuckzone_anticamp_punishfreq", "2", "How much time between slaps.", 0, true, 0.0);
 	g_CooldownDelay = CreateConVar("sm_fuckzone_anticamp_cooldown_delay", "5.0", "How much time a client has to be out of a camping zone before he is no longer instantly slapped when entering one.", 0, true, 0.0);
@@ -57,7 +59,8 @@ public void OnPluginStart()
 	g_bEnableWarn = CreateConVar("sm_fuckzone_anticamp_enable_warn", "0", "Enable the warning system. 0 to disable, 1 to enable. ***REQUIRES the SM warn plugin!***", 0, true, 0.0, true, 1.0);
 	g_iWarnValue = CreateConVar("sm_fuckzone_anticamp_warn_value", "3", "After how many times a player caught camping should be warned.", 0, true, 0.0);
 	g_szWarnReason = CreateConVar("sm_fuckzone_anticamp_warn_reason", "Stop camping.", "The warn reason.");
-	
+	g_cSlapOrDamage = CreateConVar("sm_fuckzone_anticamp_slapordamage", "0", "0 to slap a player, 1 to only damage them.", 0, true, 0.0, true, 1.0);
+
 	HookEvent("round_start", Event_OnRoundStart);
 	HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
 	HookEvent("teamplay_round_start", Event_OnRoundStart);
@@ -283,7 +286,10 @@ public Action Punish_Timer(Handle timer, int UserId)
 		{
 			EmitSoundToClient(client, szSoundFilePath);
 		}
-		SlapPlayer(client, GetConVarInt(g_SlapDamage), true);
+		if(g_cSlapOrDamage.BoolValue)
+			SDKHooks_TakeDamage(client, 0, 0, GetConVarFloat(g_SlapDamage));
+		else
+			SlapPlayer(client, GetConVarInt(g_SlapDamage), true);
 		delete(g_hFreqTimers[client]);
 		g_hFreqTimers[client] = CreateTimer(GetConVarFloat(g_PunishFreq), Repeat_Timer, GetClientUserId(client), TIMER_REPEAT);
 	}
@@ -302,7 +308,10 @@ public Action Repeat_Timer(Handle timer, int UserId)
 		return Plugin_Stop;
   }
 	CPrintToChat(client, "%t", "Camp_Message_Self");
-	SlapPlayer(client, GetConVarInt(g_SlapDamage), true);
+	if(g_cSlapOrDamage.BoolValue)
+		SDKHooks_TakeDamage(client, 0, 0, GetConVarFloat(g_SlapDamage));
+	else
+		SlapPlayer(client, GetConVarInt(g_SlapDamage), true);
 	return Plugin_Continue;
 }
 
