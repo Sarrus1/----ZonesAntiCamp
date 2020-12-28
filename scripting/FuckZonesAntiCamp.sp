@@ -32,7 +32,8 @@ ConVar
 	g_iWarnValue,
 	g_szWarnReason,
 	g_cSlapOrDamage,
-	cvar_time;
+	cvar_time,
+	g_cRampupDamage;
 
 int g_iCampCounters[MAXPLAYERS +1] = {0};
 
@@ -60,6 +61,7 @@ public void OnPluginStart()
 	g_iWarnValue = CreateConVar("sm_fuckzone_anticamp_warn_value", "3", "After how many times a player caught camping should be warned.", 0, true, 0.0);
 	g_szWarnReason = CreateConVar("sm_fuckzone_anticamp_warn_reason", "Stop camping.", "The warn reason.");
 	g_cSlapOrDamage = CreateConVar("sm_fuckzone_anticamp_slapordamage", "0", "0 to slap a player, 1 to only damage them.", 0, true, 0.0, true, 1.0);
+	g_cRampupDamage = CreateConVar("sm_fuckzone_anticamp_rampup_dmg", "0", "Ramp up the damages proportionnaly to amount of time players have been caught camping when slaping players", _, true, 0.0, true, 1.0);	
 
 	HookEvent("round_start", Event_OnRoundStart);
 	HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
@@ -190,13 +192,9 @@ public void fuckZones_OnStartTouchZone_Post(int client, int entity, const char[]
 		{
 			delete(g_hClientTimers[client]);
 			if (IsFreezeTime())
-			{
 				g_hClientTimers[client] = CreateTimer(GetConVarFloat(cvar_time) + GetConVarFloat(FindConVar("mp_freezetime")), Timer_End, GetClientUserId(client));
-			}
 			else
-			{
 				g_hClientTimers[client] = CreateTimer(GetConVarFloat(cvar_time), Timer_End, GetClientUserId(client));
-			}
 		}
 		else
 		{
@@ -205,9 +203,7 @@ public void fuckZones_OnStartTouchZone_Post(int client, int entity, const char[]
 			char szSoundFilePath[256];
 			GetConVarString(g_szSoundFilePath, szSoundFilePath, 256);
 			if (!StrEqual(szSoundFilePath, ""))
-			{
 				EmitSoundToClient(client, szSoundFilePath);
-			}
 			SlapPlayer(client, GetConVarInt(g_SlapDamage), true);
 			g_hFreqTimers[client] = CreateTimer(GetConVarFloat(g_PunishFreq), Repeat_Timer, GetClientUserId(client), TIMER_REPEAT);
 		}
@@ -283,13 +279,14 @@ public Action Punish_Timer(Handle timer, int UserId)
 		char szSoundFilePath[256];
 		GetConVarString(g_szSoundFilePath, szSoundFilePath, 256);
 		if (!StrEqual(szSoundFilePath, ""))
-		{
 			EmitSoundToClient(client, szSoundFilePath);
-		}
+		float SlapDamage = GetConVarFloat(g_SlapDamage);
+		if(GetConVarBool(g_cRampupDamage))
+			SlapDamage *= g_iCampCounters[client];
 		if(g_cSlapOrDamage.BoolValue)
-			SDKHooks_TakeDamage(client, 0, 0, GetConVarFloat(g_SlapDamage));
+			SDKHooks_TakeDamage(client, 0, 0, SlapDamage);
 		else
-			SlapPlayer(client, GetConVarInt(g_SlapDamage), true);
+			SlapPlayer(client, RoundToFloor(SlapDamage), true);
 		delete(g_hFreqTimers[client]);
 		g_hFreqTimers[client] = CreateTimer(GetConVarFloat(g_PunishFreq), Repeat_Timer, GetClientUserId(client), TIMER_REPEAT);
 	}
