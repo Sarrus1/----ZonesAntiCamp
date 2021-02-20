@@ -45,4 +45,3 @@ If you have questions, you can add me on Discord: Sarrus#9090
 - ~~Do a cooldown system~~
 - ~~Add sound support~~
 - Make zones without having to rename them
-- 
