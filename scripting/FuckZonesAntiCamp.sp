@@ -3,8 +3,10 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <colorvariables>
+
 #undef REQUIRE_PLUGIN
 #include <smwarn>
+
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -33,9 +35,13 @@ ConVar
 	g_szWarnReason,
 	g_cSlapOrDamage,
 	cvar_time,
-	g_cRampupDamage;
+	g_cRampupDamage,
+	g_cBlindPlayer;
 
 int g_iCampCounters[MAXPLAYERS +1] = {0};
+
+UserMsg g_FadeUserMsgId;
+
 
 public Plugin myinfo =
 {
@@ -45,6 +51,7 @@ public Plugin myinfo =
 	version = "1.2",
 	url = "https://github.com/Sarrus1/"
 };
+
 
 public void OnPluginStart() 
 {
@@ -62,6 +69,7 @@ public void OnPluginStart()
 	g_szWarnReason = CreateConVar("sm_fuckzone_anticamp_warn_reason", "Stop camping.", "The warn reason.");
 	g_cSlapOrDamage = CreateConVar("sm_fuckzone_anticamp_slapordamage", "0", "0 to slap a player, 1 to only damage them.", 0, true, 0.0, true, 1.0);
 	g_cRampupDamage = CreateConVar("sm_fuckzone_anticamp_rampup_dmg", "0", "Ramp up the damages proportionnaly to amount of time players have been caught camping when slaping players", _, true, 0.0, true, 1.0);	
+	g_cBlindPlayer = CreateConVar("sm_fuckzone_anticamp_blind_player", "1", "Wether or not to blind a player when they get slapped. 0 to disable, 1 to enable", _, true, 0.0, true, 1.0);	
 
 	HookEvent("round_start", Event_OnRoundStart);
 	HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
@@ -69,16 +77,18 @@ public void OnPluginStart()
 	HookEvent("player_death", OnClientDied, EventHookMode_Post);
 	HookEvent("player_team", OnClientChangeTeam, EventHookMode_Pre);
 
+	g_FadeUserMsgId = GetUserMessageId("Fade");
 
 	AutoExecConfig(true,"FuckZonesAntiCamp");
-
 }
+
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    MarkNativeAsOptional("smwarn_warn");
-    return APLRes_Success;
+	MarkNativeAsOptional("smwarn_warn");
+	return APLRes_Success;
 }
+
 
 public Action Event_OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
@@ -119,6 +129,7 @@ public void OnMapStart()
     }
 }
 
+
 public void OnMapEnd() 
 {
 	delete(g_AntiCampDisable);
@@ -139,7 +150,10 @@ public void ResetTimer(int client)
 	delete(g_hPunishTimers[client]);
 	delete(g_hCooldownTimers[client]);
 	delete(g_hFreqTimers[client]);
+	if(GetConVarBool(g_cBlindPlayer))
+		PerformBlind(0, client, 0);
 }
+
 
 //Reset timer when client arrives
 public void OnClientPutInServer(int client)
@@ -148,12 +162,14 @@ public void OnClientPutInServer(int client)
 	ResetTimer(client);
 }
 
+
 //Reset timer when client disconnects
 public void OnClientDisconnect(int client)
 {
 	g_iCampCounters[client] = 0;
 	ResetTimer(client);
 }
+
 
 //Reset timer when client changes team
 public Action OnClientChangeTeam(Event event, const char[] name, bool dontBroadcast)
@@ -162,12 +178,14 @@ public Action OnClientChangeTeam(Event event, const char[] name, bool dontBroadc
 	RequestFrame(ResetTimer, client);
 }
 
+
 //Reset timer when client dies
 public Action OnClientDied(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	RequestFrame(ResetTimer, client);
 }
+
 
 //Reset timer when the round ends
 public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -233,12 +251,12 @@ public Action Cooldown_End(Handle timer, int UserId)
 {
 	int client = GetClientOfUserId(UserId);
 	if(!client)
-	{
 		return;
-	}
+	
 	CPrintToChat(client, "%t", "Cooldown_Expired");
 	g_hCooldownTimers[client] = null;
 }
+
 
 //What do to when the main timer ends
 public Action Timer_End(Handle timer, int UserId)
@@ -257,19 +275,24 @@ public Action Timer_End(Handle timer, int UserId)
 	}
 }
 
+
 //What to do when the punish timer ends
 public Action Punish_Timer(Handle timer, int UserId)
 {
 	int client = GetClientOfUserId(UserId);
+
 	if(!client)
 	{
 		return;
 	}
+
 	g_hPunishTimers[client] = null;
+
 	if (IsClientInGame(client) && IsPlayerAlive(client))
 	{
 		g_iCampCounters[client]++;
 		CPrintToChatAll("%t", "Camp_Message_All", client, g_iCampCounters[client]);
+
 		if(GetConVarBool(g_bEnableWarn) && (g_iCampCounters[client] % GetConVarInt(g_iWarnValue) == 0))
 		{
 			char szWarnReason[256];
@@ -278,48 +301,60 @@ public Action Punish_Timer(Handle timer, int UserId)
 		}
 		char szSoundFilePath[256];
 		GetConVarString(g_szSoundFilePath, szSoundFilePath, 256);
+
 		if (!StrEqual(szSoundFilePath, ""))
 			EmitSoundToClient(client, szSoundFilePath);
 		float SlapDamage = GetConVarFloat(g_SlapDamage);
+
+		if(GetConVarBool(g_cBlindPlayer))
+			PerformBlind(0, client, 255);
+
 		if(GetConVarBool(g_cRampupDamage))
 			SlapDamage *= g_iCampCounters[client];
+
 		if(g_cSlapOrDamage.BoolValue)
 			SDKHooks_TakeDamage(client, 0, 0, SlapDamage);
 		else
 			SlapPlayer(client, RoundToFloor(SlapDamage), true);
+
 		delete(g_hFreqTimers[client]);
 		g_hFreqTimers[client] = CreateTimer(GetConVarFloat(g_PunishFreq), Repeat_Timer, GetClientUserId(client), TIMER_REPEAT);
 	}
 }
 
+
 public Action Repeat_Timer(Handle timer, int UserId)
 {
 	int client = GetClientOfUserId(UserId);
+
 	if (!client)
-	{
     return Plugin_Stop; // Stop early, invalid client index.
-  }
+
 	if (!IsPlayerAlive(client))
 	{
 		g_hFreqTimers[client] = null;
 		return Plugin_Stop;
   }
+
 	CPrintToChat(client, "%t", "Camp_Message_Self");
+
 	if(g_cSlapOrDamage.BoolValue)
 		SDKHooks_TakeDamage(client, 0, 0, GetConVarFloat(g_SlapDamage));
 	else
 		SlapPlayer(client, GetConVarInt(g_SlapDamage), true);
+
 	return Plugin_Continue;
 }
 
 public Action AntiCamp_Disable(Handle timer)
 {
 	g_anticampdisabled = true;
+
 	CPrintToChatAll("%t", "AntiCamp_Disabled");
+
 	for(int iClient = 1; iClient <= MaxClients; iClient++)
-  {
 		ResetTimer(iClient);
-  }
+
 	g_AntiCampDisable = null;
 }
 
@@ -337,6 +372,53 @@ bool IsFreezeTime()
 public bool IsValidClient(int client)
 {
 	return (client >= 0 && client <= MaxClients && IsClientConnected(client) && IsClientAuthorized(client) && IsClientInGame(client) && !IsFakeClient(client));
+}
+
+
+stock void PerformBlind(int client, int target, int amount)
+{
+	int targets[2];
+	targets[0] = target;
+	
+	int duration = 1536;
+	int holdtime = 1536;
+	int flags;
+	if (amount == 0)
+	{
+		flags = (0x0001 | 0x0010);
+	}
+	else
+	{
+		flags = (0x0002 | 0x0008);
+	}
+	
+	int color[4] = { 0, 0, 0, 0 };
+	color[3] = amount;
+	
+	Handle message = StartMessageEx(g_FadeUserMsgId, targets, 1);
+	if (GetUserMessageType() == UM_Protobuf)
+	{
+		Protobuf pb = UserMessageToProtobuf(message);
+		pb.SetInt("duration", duration);
+		pb.SetInt("hold_time", holdtime);
+		pb.SetInt("flags", flags);
+		pb.SetColor("clr", color);
+	}
+	else
+	{
+		BfWrite bf = UserMessageToBfWrite(message);
+		bf.WriteShort(duration);
+		bf.WriteShort(holdtime);
+		bf.WriteShort(flags);		
+		bf.WriteByte(color[0]);
+		bf.WriteByte(color[1]);
+		bf.WriteByte(color[2]);
+		bf.WriteByte(color[3]);
+	}
+	
+	EndMessage();
+
+	//LogAction(client, target, "\"%L\" set blind on \"%L\" (amount \"%d\")", client, target, amount);
 }
 
 /*
