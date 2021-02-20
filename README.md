@@ -14,13 +14,13 @@ Admins can decide how much slap damage will be inflicted, how long the player ca
 
 ## Installation ##
 1. Grab the latest release from the release page and unzip it in your sourcemod folder.
-2. Restart the server or type `sm plugins load fuckZonesAntiCamp` in the console to load the plugin.
-3. The config file will be automatically generated in cfg/sourcemod/
+2. Restart the server or type **`sm plugins load fuckZonesAntiCamp`** in the console to load the plugin.
+3. The config file will be automatically generated in **`cfg/sourcemod/`**
 
 ## Configuration ##
-- You can modify the phrases in **addons/sourcemod/translations/fuckZonesAntiCamp.phrases.txt**.
-- Once the plugin has been loaded, you can modify the cvars in **cfg/sourcemod/fuckZonesAntiCamp.cfg**.
-- To add a sound, put it in the **sound/misc/anticamp folder**. It has to be in the .mp3 format. Then, configure the appropriate convar in **cfg/sourcemod/fuckZonesAntiCamp.cfg** by pointing to the sound file relative to the sound folder. Remember to add the sound file to your FASTDL directory aswell.
+- You can modify the phrases in **`addons/sourcemod/translations/fuckZonesAntiCamp.phrases.txt`**.
+- Once the plugin has been loaded, you can modify the cvars in **`cfg/sourcemod/fuckZonesAntiCamp.cfg`**.
+- To add a sound, put it in the **`sound/misc/anticamp folder`**. It has to be in the .mp3 format. Then, configure the appropriate convar in **`cfg/sourcemod/fuckZonesAntiCamp.cfg`** by pointing to the sound file relative to the sound folder. Remember to add the sound file to your FASTDL directory aswell.
 
 ## Usage ##
 ### Creating zones ###
@@ -31,7 +31,9 @@ Once a zone has been created, you can modifiy it my typing !zones in chat.
 
 ### Restrict zones ###
 If you don't want CT to camp in a zone, include **"AnticampCT"** in the name of the zone.
+
 For T, use **"AnticampT"**.
+
 For Both teams, use **"AnticampBoth"**
 
 ## Contacts ##
