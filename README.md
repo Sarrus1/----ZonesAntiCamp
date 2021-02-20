@@ -11,7 +11,7 @@ Admins can decide how much slap damage will be inflicted, how long the player ca
 ## Requirements ##
 - Sourcemod and Metamod
 - [fuckZones](https://forums.alliedmods.net/showthread.php?t=328422) by Bara
-- [SM Warn](https://forums.alliedmods.net/showthread.php?t=197853) (Optional)
+- [SM Warn](https://forums.alliedmods.net/showthread.php?t=197853) *(Optional)*
 
 ## Installation ##
 1. Grab the latest release from the release page and unzip it in your sourcemod folder.
