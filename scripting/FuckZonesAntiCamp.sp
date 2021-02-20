@@ -377,6 +377,9 @@ public bool IsValidClient(int client)
 
 stock void PerformBlind(int client, int target, int amount)
 {
+	if(!IsValidClient(target))
+		return;
+	
 	int targets[2];
 	targets[0] = target;
 	
