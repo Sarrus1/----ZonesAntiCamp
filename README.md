@@ -5,6 +5,7 @@ An advanced anti-camp plugin for CS:GO, made for fuckZones by Bara.
 
 ## Description ##
 Admins can define areas, where, if a player spends more than x minutes in it, he will get slapped until he leaves the area.
+
 Admins can decide how much slap damage will be inflicted, how long the player can stay in the areas, and more.
 
 ## Requirements ##
@@ -27,14 +28,14 @@ Admins can decide how much slap damage will be inflicted, how long the player ca
 Once the plugin has been loaded, admins can type **`!zones`** in chat to open the zone menu. From there you can create a zone by pointing your cursor at where you want to create the zone.
 
 ### Editing zones ###
-Once a zone has been created, you can modifiy it my typing !zones in chat.
+Once a zone has been created, you can modifiy it my typing **`!zones`** in chat.
 
 ### Restrict zones ###
 If you don't want CT to camp in a zone, include **"AnticampCT"** in the name of the zone.
 
 For T, use **"AnticampT"**.
 
-For Both teams, use **"AnticampBoth"**
+For Both teams, use **"AnticampBoth"**.
 
 ## Contacts ##
 If you have questions, you can add me on Discord: Sarrus#9090
@@ -44,5 +45,4 @@ If you have questions, you can add me on Discord: Sarrus#9090
 - ~~Do a cooldown system~~
 - ~~Add sound support~~
 - Make zones without having to rename them
-
-
+- 
