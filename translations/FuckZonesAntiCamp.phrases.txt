@@ -4,7 +4,7 @@
     {
         "#format" "{1:N},{2:i}"
         "en"        "{green}[Anti-Camp]{gold} {1} {default}is spawn camping! It's been {purple}{2}{default} times."
-        "pt"        "{green}[Anti-Camp]{gold} {1} {default}esta camperando no spawn! Com está já foi {purple}{2}{default} vezes.""
+        "pt"        "{green}[Anti-Camp]{gold} {1} {default}esta camperando no spawn! Com está já foi {purple}{2}{default} vezes."
         "fr"        "{green}[Anti-Camp]{gold} {1} {default}est en train de camper au spawn! Ca fait {purple}{2}{default} fois."
     }
     "Camp_Message_Self"
@@ -37,5 +37,16 @@
         "en"        "{green}[Anti-Camp] {default}The anti-camp has been disabled for the rest of the round."
         "pt"        "{green}[Anti-Camp] {default}O anti-camp foi desativado para o resto do round."
         "fr"        "{green}[Anti-Camp] {default}L'anti-camp a été désactivé pour le reste du round."
+    }
+    "Sounds Reloaded"
+    {
+        "#format" "{1:i}"
+        "en"        "{green}[Anti-Camp] {default}{1} sounds have been reloaded."
+        "fr"        "{green}[Anti-Camp] {default}{1} sons a été chargé."
+    }
+    "Invalid Sound Path"
+    {
+        "en"        "{green}[Anti-Camp] {default}Sound Path is invalid."
+        "fr"        "{green}[Anti-Camp] {default}Le chemin d'accès des sons est invalide."
     }
 }

@@ -3,6 +3,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <colorvariables>
+#include <abnersound>
 
 #undef REQUIRE_PLUGIN
 #include <smwarn>
@@ -24,7 +25,8 @@ Handle
 bool g_anticampdisabled = false;
 
 ConVar 
-	g_szSoundFilePath = null,
+	g_cSoundPath = null,
+	g_cPlayType,
 	g_SlapDamage,
 	g_PunishDelay,
 	g_PunishFreq,
@@ -41,6 +43,8 @@ ConVar
 int g_iCampCounters[MAXPLAYERS +1] = {0};
 
 UserMsg g_FadeUserMsgId;
+
+ArrayList sounds;
 
 
 public Plugin myinfo =
@@ -63,7 +67,8 @@ public void OnPluginStart()
 	g_PunishFreq = CreateConVar("sm_fuckzone_anticamp_punishfreq", "2", "How much time between slaps.", 0, true, 0.0);
 	g_CooldownDelay = CreateConVar("sm_fuckzone_anticamp_cooldown_delay", "5.0", "How much time a client has to be out of a camping zone before he is no longer instantly slapped when entering one.", 0, true, 0.0);
 	g_disabletime = CreateConVar("sm_fuckzone_anticamp_disabletime", "40", "How much time after the round start until the timer automatically disables. Set to 0 to disable.", 0, true, 0.0);
-	g_szSoundFilePath = CreateConVar("sm_fuckzone_anticamp_sound_path", "misc/anticamp/camper.mp3", "The file path of the camping sound. Leave blank to disable.");
+	g_cSoundPath = CreateConVar("sm_fuckzone_anticamp_sound_path", "misc/anticamp", "The folder path of the camping sounds. Leave blank to disable.");
+	g_cPlayType = CreateConVar("sm_fuckzone_anticamp_sound_play_type", "1", "1 - Random, 2- Play in queue");
 	g_bEnableWarn = CreateConVar("sm_fuckzone_anticamp_enable_warn", "0", "Enable the warning system. 0 to disable, 1 to enable. ***REQUIRES the SM warn plugin!***", 0, true, 0.0, true, 1.0);
 	g_iWarnValue = CreateConVar("sm_fuckzone_anticamp_warn_value", "3", "After how many times a player caught camping should be warned.", 0, true, 0.0);
 	g_szWarnReason = CreateConVar("sm_fuckzone_anticamp_warn_reason", "Stop camping.", "The warn reason.");
@@ -77,7 +82,11 @@ public void OnPluginStart()
 	HookEvent("player_death", OnClientDied, EventHookMode_Post);
 	HookEvent("player_team", OnClientChangeTeam, EventHookMode_Pre);
 
+	RegAdminCmd("sm_sound_refresh", CommandReload, ADMFLAG_ROOT);
+
 	g_FadeUserMsgId = GetUserMessageId("Fade");
+
+	sounds = new ArrayList(512);
 
 	AutoExecConfig(true,"FuckZonesAntiCamp");
 }
@@ -111,13 +120,8 @@ public Action Event_OnRoundStart(Handle event, const char[] name, bool dontBroad
 
 public void OnMapStart()
 {
-	char szSoundFilePath[256];
-	char szSoundFullPath[256];
-	GetConVarString(g_szSoundFilePath, szSoundFilePath, 256);
-	szSoundFullPath = "sound/";
-	StrCat(szSoundFullPath, sizeof(szSoundFullPath), szSoundFilePath);
-	AddFileToDownloadsTable(szSoundFullPath);
-	PrecacheSound(szSoundFilePath);
+	RefreshSounds(0);
+
 	delete(g_AntiCampDisable);
 	for(int iClient = 1; iClient <= MaxClients; iClient++)
     {
@@ -218,10 +222,14 @@ public void fuckZones_OnStartTouchZone_Post(int client, int entity, const char[]
 		{
 			ResetTimer(client);
 			CPrintToChat(client, "%t", "Cooldown_Not_Expired");
-			char szSoundFilePath[256];
-			GetConVarString(g_szSoundFilePath, szSoundFilePath, 256);
-			if (!StrEqual(szSoundFilePath, ""))
-				EmitSoundToClient(client, szSoundFilePath);
+		
+			char szSound[128];
+			bool random = GetConVarInt(g_cPlayType) == 1;
+			bool success = GetSound(sounds, g_cSoundPath, random, szSound, sizeof(szSound));
+			
+			if(success)
+				PlaySoundClient(client, szSound, 1.0);
+			
 			SlapPlayer(client, GetConVarInt(g_SlapDamage), true);
 			g_hFreqTimers[client] = CreateTimer(GetConVarFloat(g_PunishFreq), Repeat_Timer, GetClientUserId(client), TIMER_REPEAT);
 		}
@@ -299,11 +307,14 @@ public Action Punish_Timer(Handle timer, int UserId)
 			GetConVarString(g_szWarnReason, szWarnReason, sizeof(szWarnReason));
 			smwarn_warn(client, szWarnReason);
 		}
-		char szSoundFilePath[256];
-		GetConVarString(g_szSoundFilePath, szSoundFilePath, 256);
 
-		if (!StrEqual(szSoundFilePath, ""))
-			EmitSoundToClient(client, szSoundFilePath);
+		char szSound[128];
+		bool random = GetConVarInt(g_cPlayType) == 1;
+		bool success = GetSound(sounds, g_cSoundPath, random, szSound, sizeof(szSound));
+		
+		if(success)
+			PlaySoundClient(client, szSound, 1.0);
+
 		float SlapDamage = GetConVarFloat(g_SlapDamage);
 
 		if(GetConVarBool(g_cBlindPlayer))
@@ -358,10 +369,12 @@ public Action AntiCamp_Disable(Handle timer)
 	g_AntiCampDisable = null;
 }
 
+
 bool IsWarmup()
 {
 	return (GameRules_GetProp("m_bWarmupPeriod") == 1);
 }
+
 
 bool IsFreezeTime()
 {
@@ -369,10 +382,14 @@ bool IsFreezeTime()
 }
 
 
-public bool IsValidClient(int client)
-{
-	return (client >= 0 && client <= MaxClients && IsClientConnected(client) && IsClientAuthorized(client) && IsClientInGame(client) && !IsFakeClient(client));
-}
+stock bool IsValidClient(int client, bool nobots = true)
+{ 
+	if (client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)))
+	{
+		return false; 
+	}
+	return IsClientInGame(client) && IsClientAuthorized(client); 
+} 
 
 
 stock void PerformBlind(int client, int target, int amount)
@@ -423,6 +440,41 @@ stock void PerformBlind(int client, int target, int amount)
 
 	//LogAction(client, target, "\"%L\" set blind on \"%L\" (amount \"%d\")", client, target, amount);
 }
+
+stock void RefreshSounds(int client)
+{
+	char soundPath[PLATFORM_MAX_PATH];
+
+	GetConVarString(g_cSoundPath, soundPath, sizeof(soundPath));
+	
+	if(StrEqual("", soundPath))
+	{
+		if(IsValidClient(client))
+			CReplyToCommand(client, "%t", "Invalid Sound Path");
+		return;
+	}
+	
+	int size = LoadSounds(sounds, g_cSoundPath);
+	if(size > 0)
+	{
+		if(IsValidClient(client))
+			CReplyToCommand(client, "%t", "Sounds Reloaded", size);
+	}
+	else
+	{
+		if(IsValidClient(client))
+			CReplyToCommand(client, "%t", "Invalid Sound Path");
+	}
+}
+		
+
+
+public Action CommandReload(int client, int args)
+{
+	RefreshSounds(client);
+	return Plugin_Handled;
+}
+
 
 /*
 bool IsCTZone(StringMap values)
