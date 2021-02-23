@@ -21,7 +21,9 @@ Admins can decide how much slap damage will be inflicted, how long the player ca
 ## Configuration ##
 - You can modify the phrases in **`addons/sourcemod/translations/fuckZonesAntiCamp.phrases.txt`**.
 - Once the plugin has been loaded, you can modify the cvars in **`cfg/sourcemod/fuckZonesAntiCamp.cfg`**.
-- To add a sound, put it in the **`sound/misc/anticamp folder`**. It has to be in the .mp3 format, with a sample rate of 28kHz or 32kHz (not above 48kHz). Then, configure the appropriate convar in **`cfg/sourcemod/fuckZonesAntiCamp.cfg`** by settings its value to **`sound/misc`**. Remember to add the sound files to your FASTDL directory aswell.
+- To add a sound, put it in the **`sound/misc/anticamp` folder**. It has to be in the **`.mp3`** format, with a sample rate of **28kHz or 32kHz *(not above 48kHz)***. Then, configure the appropriate convar in **`cfg/sourcemod/fuckZonesAntiCamp.cfg`** by settings its value to **`sound/misc`**.
+
+***Remember to add the sound files to your FASTDL directory aswell.***
 
 ## Usage ##
 ### Creating zones ###
