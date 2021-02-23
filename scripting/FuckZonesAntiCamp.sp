@@ -39,7 +39,8 @@ ConVar
 	cvar_time,
 	g_cRampupDamage,
 	g_cBlindPlayer,
-	g_cStopSoundOnZoneLeave;
+	g_cStopSoundOnZoneLeave,
+	g_cSoundVolume;
 
 int g_iCampCounters[MAXPLAYERS +1] = {0, ...},
 	g_iSoundBeingPlayed[MAXPLAYERS + 1] = {-1, ...};
@@ -78,6 +79,7 @@ public void OnPluginStart()
 	g_cRampupDamage = CreateConVar("sm_fuckzone_anticamp_rampup_dmg", "0", "Ramp up the damages proportionnaly to amount of time players have been caught camping when slaping players.", _, true, 0.0, true, 1.0);	
 	g_cBlindPlayer = CreateConVar("sm_fuckzone_anticamp_blind_player", "1", "Wether or not to blind a player when they get slapped. 0 to disable, 1 to enable.", _, true, 0.0, true, 1.0);	
 	g_cStopSoundOnZoneLeave = CreateConVar("sm_fuckzone_anticamp_stop_sound", "1", "Wether or not to stop the camping sound when the player leaves the zone. 0 to disable, 1 to enable.", _, true, 0.0, true, 1.0);	
+	g_cSoundVolume = CreateConVar("sm_fuckzone_anticamp_sound_volume", "1", "Volume of the camper sounds.", _, true, 0.0, true, 1.0);	
 
 	HookEvent("round_start", Event_OnRoundStart);
 	HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
@@ -242,7 +244,7 @@ public void fuckZones_OnStartTouchZone_Post(int client, int entity, const char[]
 			if(success != -1)
 			{
 				g_iSoundBeingPlayed[client] = success;
-				PlaySoundClient(client, szSound, 1.0);
+				PlaySoundClient(client, szSound, g_cSoundVolume.FloatValue);
 			}
 				
 			
@@ -331,7 +333,7 @@ public Action Punish_Timer(Handle timer, int UserId)
 		if(success != -1)
 		{
 			g_iSoundBeingPlayed[client] = random;
-			PlaySoundClient(client, szSound, 1.0);
+			PlaySoundClient(client, szSound, g_cSoundVolume.FloatValue);
 		}
 
 		float SlapDamage = GetConVarFloat(g_SlapDamage);
