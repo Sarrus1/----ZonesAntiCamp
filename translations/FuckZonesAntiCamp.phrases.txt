@@ -4,7 +4,7 @@
     {
         "#format" "{1:N},{2:i}"
         "en"        "{green}[Anti-Camp]{gold} {1} {default}is spawn camping! It's been {purple}{2}{default} times."
-        "pt"        "{green}[Anti-Camp]{gold} {1} {default}esta camperando no spawn! Com está já foi {purple}{2}{default} vezes."
+        "pt"        "{green}[Anti-Camp]{gold} {1} {default}esta camperando no spawn! Com está já foram {purple}{2}{default} vezes."
         "fr"        "{green}[Anti-Camp]{gold} {1} {default}est en train de camper au spawn! Ca fait {purple}{2}{default} fois."
     }
     "Camp_Message_Self"
