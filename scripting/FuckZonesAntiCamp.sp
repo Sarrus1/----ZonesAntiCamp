@@ -38,9 +38,11 @@ ConVar
 	g_cSlapOrDamage,
 	cvar_time,
 	g_cRampupDamage,
-	g_cBlindPlayer;
+	g_cBlindPlayer,
+	g_cStopSoundOnZoneLeave;
 
-int g_iCampCounters[MAXPLAYERS +1] = {0};
+int g_iCampCounters[MAXPLAYERS +1] = {0, ...},
+	g_iSoundBeingPlayed[MAXPLAYERS + 1] = {-1, ...};
 
 UserMsg g_FadeUserMsgId;
 
@@ -73,8 +75,9 @@ public void OnPluginStart()
 	g_iWarnValue = CreateConVar("sm_fuckzone_anticamp_warn_value", "3", "After how many times a player caught camping should be warned.", 0, true, 0.0);
 	g_szWarnReason = CreateConVar("sm_fuckzone_anticamp_warn_reason", "Stop camping.", "The warn reason.");
 	g_cSlapOrDamage = CreateConVar("sm_fuckzone_anticamp_slapordamage", "0", "0 to slap a player, 1 to only damage them.", 0, true, 0.0, true, 1.0);
-	g_cRampupDamage = CreateConVar("sm_fuckzone_anticamp_rampup_dmg", "0", "Ramp up the damages proportionnaly to amount of time players have been caught camping when slaping players", _, true, 0.0, true, 1.0);	
-	g_cBlindPlayer = CreateConVar("sm_fuckzone_anticamp_blind_player", "1", "Wether or not to blind a player when they get slapped. 0 to disable, 1 to enable", _, true, 0.0, true, 1.0);	
+	g_cRampupDamage = CreateConVar("sm_fuckzone_anticamp_rampup_dmg", "0", "Ramp up the damages proportionnaly to amount of time players have been caught camping when slaping players.", _, true, 0.0, true, 1.0);	
+	g_cBlindPlayer = CreateConVar("sm_fuckzone_anticamp_blind_player", "1", "Wether or not to blind a player when they get slapped. 0 to disable, 1 to enable.", _, true, 0.0, true, 1.0);	
+	g_cStopSoundOnZoneLeave = CreateConVar("sm_fuckzone_anticamp_stop_sound", "1", "Wether or not to stop the camping sound when the player leaves the zone. 0 to disable, 1 to enable.", _, true, 0.0, true, 1.0);	
 
 	HookEvent("round_start", Event_OnRoundStart);
 	HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
@@ -127,9 +130,7 @@ public void OnMapStart()
     {
 			g_iCampCounters[iClient] = 0;
 			if(IsClientInGame(iClient))
-			{
 				ResetTimer(iClient);
-			}
     }
 }
 
@@ -150,10 +151,21 @@ public void OnMapEnd()
 //Create a reset timer function
 public void ResetTimer(int client)
 {
+	char szSound[128];
+	int success = GetSound(sounds, g_cSoundPath, false, szSound, sizeof szSound, g_iSoundBeingPlayed[client]);
+
 	delete(g_hClientTimers[client]);
 	delete(g_hPunishTimers[client]);
 	delete(g_hCooldownTimers[client]);
 	delete(g_hFreqTimers[client]);
+
+	if(success != -1 && g_cStopSoundOnZoneLeave.BoolValue)
+	{
+		StopSound(client, SNDCHAN_AUTO, szSound);
+		g_iSoundBeingPlayed[client] = -1;
+	}
+
+	
 	if(GetConVarBool(g_cBlindPlayer))
 		PerformBlind(0, client, 0);
 }
@@ -225,10 +237,14 @@ public void fuckZones_OnStartTouchZone_Post(int client, int entity, const char[]
 		
 			char szSound[128];
 			bool random = GetConVarInt(g_cPlayType) == 1;
-			bool success = GetSound(sounds, g_cSoundPath, random, szSound, sizeof(szSound));
+			int success = GetSound(sounds, g_cSoundPath, random, szSound, sizeof(szSound));
 			
-			if(success)
+			if(success != -1)
+			{
+				g_iSoundBeingPlayed[client] = success;
 				PlaySoundClient(client, szSound, 1.0);
+			}
+				
 			
 			SlapPlayer(client, GetConVarInt(g_SlapDamage), true);
 			g_hFreqTimers[client] = CreateTimer(GetConVarFloat(g_PunishFreq), Repeat_Timer, GetClientUserId(client), TIMER_REPEAT);
@@ -310,10 +326,13 @@ public Action Punish_Timer(Handle timer, int UserId)
 
 		char szSound[128];
 		bool random = GetConVarInt(g_cPlayType) == 1;
-		bool success = GetSound(sounds, g_cSoundPath, random, szSound, sizeof(szSound));
+		int success = GetSound(sounds, g_cSoundPath, random, szSound, sizeof(szSound));
 		
-		if(success)
+		if(success != -1)
+		{
+			g_iSoundBeingPlayed[client] = random;
 			PlaySoundClient(client, szSound, 1.0);
+		}
 
 		float SlapDamage = GetConVarFloat(g_SlapDamage);
 

@@ -90,12 +90,11 @@ int LoadSounds(ArrayList arraySounds, ConVar pathConVar)
 }
  
 
-bool GetSound(ArrayList arraySounds, ConVar pathConVar, bool random, char[] szSound, int soundSize)
+int GetSound(ArrayList arraySounds, ConVar pathConVar, bool random, char[] szSound, int soundSize, int soundToPlay = 0)
 {
-	if(arraySounds.Length <= 0)
-		return false;
+	if(arraySounds.Length <= 0 || soundToPlay == -1)
+		return -1;
 		
-	int soundToPlay = 0;
 	if(random)
 	{
 		soundToPlay = GetRandomInt(0, arraySounds.Length-1);
@@ -108,7 +107,7 @@ bool GetSound(ArrayList arraySounds, ConVar pathConVar, bool random, char[] szSo
 	if(arraySounds.Length == 0)
 		LoadSounds(arraySounds, pathConVar);
 		
-	return true;
+	return soundToPlay;
 }
 
 
