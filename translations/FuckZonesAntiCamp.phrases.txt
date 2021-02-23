@@ -35,18 +35,20 @@
     "AntiCamp_Disabled"
     {
         "en"        "{green}[Anti-Camp] {default}The anti-camp has been disabled for the rest of the round."
-        "pt"        "{green}[Anti-Camp] {default}O anti-camp foi desativado para o resto do round."
+        "pt"        "{green}[Anti-Camp] {default}Anti-camp foi desativado para o resto do round."
         "fr"        "{green}[Anti-Camp] {default}L'anti-camp a été désactivé pour le reste du round."
     }
     "Sounds Reloaded"
     {
         "#format" "{1:i}"
         "en"        "{green}[Anti-Camp] {default}{1} sounds have been reloaded."
+        "pt"        "{green}[Anti-Camp] {default}{1} sons foram recarregados."
         "fr"        "{green}[Anti-Camp] {default}{1} sons a été chargé."
     }
     "Invalid Sound Path"
     {
         "en"        "{green}[Anti-Camp] {default}Sound Path is invalid."
+        "pt"        "{green}[Anti-Camp] {default}Caminho do som é inválido."
         "fr"        "{green}[Anti-Camp] {default}Le chemin d'accès des sons est invalide."
     }
 }
