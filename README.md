@@ -40,7 +40,7 @@ For T, use **"AnticampT"**.
 For Both teams, use **"AnticampBoth"**.
 
 ## Contacts ##
-If you have questions, you can visit ![this Discord server](https://discord.tensor.fr).
+If you have questions, you can visit [this Discord server](https://discord.tensor.fr).
 
 ## To do ##
 - ~~Add a Cvar to set slap frequency~~
